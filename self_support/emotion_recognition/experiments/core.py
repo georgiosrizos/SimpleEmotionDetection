@@ -1,13 +1,8 @@
 import numpy as np
 import tensorflow as tf
 import sklearn
-from scipy import interp
-from tensorflow.python.ops import array_ops
-from scipy import sparse as spsp
-from scipy import signal as spsig
-from scipy import special as spspec
 
-from dataset_readers.common import dict_to_struct
+from self_support.common import dict_to_struct
 
 
 def flatten_data(data, flattened_size):
@@ -18,26 +13,10 @@ def flatten_data(data, flattened_size):
     return flattened_data
 
 
-def get_deepspectrum_model():
-
-    def wrapper(*args, **kwargs):
-        return deepspectrum_wrapper_model(deepspectrum_dense_model(*args), **kwargs)
-
-    return wrapper
-
-
 def get_end2end_model():
 
     def wrapper(*args, **kwargs):
         return end2end_bilstm_model(end2end_audio_model(*args), **kwargs)
-
-    return wrapper
-
-
-def get_zixing_model():
-
-    def wrapper(*args, **kwargs):
-        return end2end_multi_lstm_model(end2end_audio_model(*args), **kwargs)
 
     return wrapper
 
@@ -212,7 +191,7 @@ def end2end_lstm_model(net,
     mean_prediction = tf.layers.dense(net, number_of_outputs)
     mean_prediction = tf.reshape(mean_prediction, (batch_size, number_of_outputs))
 
-    return mean_predictions
+    return mean_prediction
 
 
 def end2end_bilstm_model(net,

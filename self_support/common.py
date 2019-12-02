@@ -6,7 +6,7 @@ except ImportError:
     import pickle
 from collections import namedtuple
 
-import dataset_readers
+import self_support
 
 
 def get_package_path():
@@ -14,7 +14,7 @@ def get_package_path():
     Returns the folder path that the package lies in.
     :return: folder_path: The package folder path.
     """
-    return os.path.dirname(inspect.getfile(dataset_readers))
+    return os.path.dirname(inspect.getfile(self_support))
 
 
 def dict_to_struct(obj):

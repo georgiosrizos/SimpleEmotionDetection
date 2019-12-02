@@ -4,16 +4,13 @@ import inspect
 import numpy as np
 import tensorflow as tf
 
-import dataset_readers.iemocap.experiments.core as core
-import dataset_readers.iemocap.data_provider as data_provider
-from dataset_readers.common import dict_to_struct, make_dirs_safe
+import self_support.emotion_recognition.experiments.core as core
+import self_support.emotion_recognition.data_provider as data_provider
+from self_support.common import dict_to_struct, make_dirs_safe
 
 # TODO: Number of targets fix.
-# TODO: Only augmented.
-
-# TODO:Add global max pool
+# TODO: Add global max pool
 # TODO: Add fancy attention
-
 # TODO: Multiple domains.
 
 
@@ -26,69 +23,23 @@ def train(configuration):
     ####################################################################################################################
     dropout_keep_prob_eff = 0.5
 
-    if configuration.data == "all":
-        if configuration.dataset == "original":
-            train_steps_per_epoch =  configuration.train_sample_no // configuration.train_batch_size
-            if configuration.train_sample_no % configuration.train_batch_size > 0:
-                train_steps_per_epoch += 1
-            print(train_steps_per_epoch)
-            train_split_name_list = ["train", ]
-        elif configuration.dataset == "augmented":
-            train_steps_per_epoch = (configuration.train_sample_no + configuration.train_aug_sample_no) // configuration.train_batch_size
-            if (configuration.train_sample_no + configuration.train_aug_sample_no) % configuration.train_batch_size > 0:
-                train_steps_per_epoch += 1
-            print(train_steps_per_epoch)
-            train_split_name_list = ["train", "train_aug"]
-        elif configuration.dataset == "augmented_only":
-            train_steps_per_epoch = configuration.train_aug_sample_no // configuration.train_batch_size
-            if configuration.train_aug_sample_no % configuration.train_batch_size > 0:
-                train_steps_per_epoch += 1
-            print(train_steps_per_epoch)
-            train_split_name_list = ["train_aug", ]
-        elif configuration.dataset in ["reverse", "reverse_train"]:
-            train_steps_per_epoch = configuration.test_sample_no // configuration.test_batch_size
-            if configuration.test_sample_no % configuration.test_batch_size > 0:
-                train_steps_per_epoch += 1
-            print(train_steps_per_epoch)
-            train_split_name_list = ["test", ]
-        else:
-            raise ValueError("Invalid dataset type.")
+    train_steps_per_epoch =  configuration.train_sample_no // configuration.train_batch_size
+    if configuration.train_sample_no % configuration.train_batch_size > 0:
+        train_steps_per_epoch += 1
+    print(train_steps_per_epoch)
+    train_split_name_list = ["train", ]
 
-        valid_steps_per_epoch = configuration.valid_sample_no // configuration.valid_batch_size
-        if configuration.valid_sample_no % configuration.valid_batch_size > 0:
-            valid_steps_per_epoch += 1
-        print(valid_steps_per_epoch)
-        valid_split_name_list = ["valid", ]
+    valid_steps_per_epoch = configuration.valid_sample_no // configuration.valid_batch_size
+    if configuration.valid_sample_no % configuration.valid_batch_size > 0:
+        valid_steps_per_epoch += 1
+    print(valid_steps_per_epoch)
+    valid_split_name_list = ["valid", ]
 
-        if configuration.dataset in ["original", "augmented", "augmented_only"]:
-            test_steps_per_epoch = configuration.test_sample_no // configuration.test_batch_size
-            if configuration.test_sample_no % configuration.test_batch_size > 0:
-                test_steps_per_epoch += 1
-            print(test_steps_per_epoch)
-            test_split_name_list = ["test", ]
-        elif configuration.dataset == "reverse":
-            test_steps_per_epoch = configuration.train_aug_sample_no // configuration.test_batch_size
-            if configuration.train_aug_sample_no % configuration.test_batch_size > 0:
-                test_steps_per_epoch += 1
-            print(test_steps_per_epoch)
-            test_split_name_list = ["train_aug", ]
-        elif configuration.dataset == "reverse_train":
-            test_steps_per_epoch = configuration.train_sample_no // configuration.train_batch_size
-            if configuration.train_sample_no % configuration.train_batch_size > 0:
-                test_steps_per_epoch += 1
-            print(test_steps_per_epoch)
-            test_split_name_list = ["train", ]
-        else:
-            raise ValueError("Invalid dataset type.")
-
-        # train_steps_per_epoch = 615  # with aug.
-        # train_steps_per_epoch = 169  # original train.
-        # valid_steps_per_epoch = 54
-        # test_steps_per_epoch = 56
-    elif configuration.data == "only_improv":
-        raise NotImplementedError
-    else:
-        raise ValueError("Invalid data collection selected.")
+    test_steps_per_epoch = configuration.test_sample_no // configuration.test_batch_size
+    if configuration.test_sample_no % configuration.test_batch_size > 0:
+        test_steps_per_epoch += 1
+    print(test_steps_per_epoch)
+    test_split_name_list = ["test", ]
 
     if configuration.task == "single":
         targets = ["emotion"]
@@ -103,8 +54,6 @@ def train(configuration):
     number_of_targets = sum(number_of_classes)
 
     file_path_suffix = configuration.framework + "_" + \
-                       configuration.split + "_" + \
-                       configuration.dataset + "_" + \
                        configuration.task + "_" + \
                        "global_max_pooling" + "_" + \
                        repr(configuration.trial)
@@ -123,8 +72,6 @@ def train(configuration):
 
     model_trained = data_folder + "/ckpt/log/" + \
                     configuration.framework + "_" + \
-                       configuration.split + "_" + \
-                       configuration.dataset + "_" + \
                        configuration.task + "_" + \
                        "global_max_pooling" + "_" + \
                     repr(configuration.trial) + "/"
@@ -207,12 +154,8 @@ def train(configuration):
             # Define model graph and get model.
             ############################################################################################################
             # Select model framework.
-            if configuration.framework == "deepspectrum":
-                get_model_framework = core.get_deepspectrum_model
-            elif configuration.framework == "end2end":
+            if configuration.framework == "end2end":
                 get_model_framework = core.get_end2end_model
-            elif configuration.framework == "zixing":
-                get_model_framework = core.get_zixing_model
             else:
                 raise ValueError("Invalid framework.")
             with tf.variable_scope("Model"):
@@ -284,41 +227,6 @@ def train(configuration):
             ############################################################################################################
             # Train base model.
             ############################################################################################################
-            # tr_counter = 0
-            # va_counter = 0
-            # te_counter = 0
-            # sess.run(init_op_train)
-            # while True:
-            #     try:
-            #         batch_tuple = sess.run(next_element_train)
-            #     except tf.errors.OutOfRangeError:
-            #         break
-            #     audio = batch_tuple["raw_audio"]
-            #     tr_counter += 1
-            # print(tr_counter)
-            #
-            # sess.run(init_op_valid)
-            # while True:
-            #     try:
-            #         batch_tuple = sess.run(next_element_valid)
-            #     except tf.errors.OutOfRangeError:
-            #         break
-            #     audio = batch_tuple["raw_audio"]
-            #     va_counter += 1
-            # print(va_counter)
-            #
-            # sess.run(init_op_test)
-            # while True:
-            #     try:
-            #         batch_tuple = sess.run(next_element_test)
-            #     except tf.errors.OutOfRangeError:
-            #         break
-            #     audio = batch_tuple["raw_audio"]
-            #     te_counter += 1
-            # print(te_counter)
-            #
-            # raise ValueError
-
             make_dirs_safe(test_pred_dir)
             print("Start training base model.")
             print("Fresh base model.")
