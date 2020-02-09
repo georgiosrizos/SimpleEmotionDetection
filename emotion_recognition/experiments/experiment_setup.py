@@ -41,6 +41,15 @@ def train(configuration):
     print(test_steps_per_epoch)
     test_split_name_list = ["test", ]
 
+    # train_steps_per_epoch = 5
+    # train_split_name_list = ["train", ]
+    #
+    # valid_steps_per_epoch = 5
+    # valid_split_name_list = ["valid", ]
+    #
+    # test_steps_per_epoch = 5
+    # test_split_name_list = ["test", ]
+
     if configuration.task == "single":
         targets = ["emotion"]
         number_of_classes = [3, ]
@@ -128,21 +137,21 @@ def train(configuration):
             batch_size_tensor = tf.placeholder(tf.int32)
             # seq_length_tensor = tf.placeholder(tf.int32)
 
-            subject_ids_train = tf.placeholder(tf.int64, (None, ))
+            subject_ids_train = tf.placeholder(tf.int32, (None, ))
             audio_train = tf.placeholder(tf.float32, (None, configuration.seq_length))
             emotion_train = tf.placeholder(tf.float32, (None, 3))
             arousal_train = tf.placeholder(tf.float32, (None, 3))
             valence_train = tf.placeholder(tf.float32, (None, 3))
             dominance_train = tf.placeholder(tf.float32, (None, 3))
-            pre_pad_length_train = tf.placeholder(tf.int64, (None, ))
+            pre_pad_length_train = tf.placeholder(tf.int32, (None, ))
 
-            subject_ids_test = tf.placeholder(tf.int64, (None, ))
+            subject_ids_test = tf.placeholder(tf.int32, (None, ))
             audio_test = tf.placeholder(tf.float32, (None, configuration.seq_length))
             emotion_test = tf.placeholder(tf.float32, (None, 3))
             arousal_test = tf.placeholder(tf.float32, (None, 3))
             valence_test = tf.placeholder(tf.float32, (None, 3))
             dominance_test = tf.placeholder(tf.float32, (None, 3))
-            pre_pad_length_test = tf.placeholder(tf.int64, (None, ))
+            pre_pad_length_test = tf.placeholder(tf.int32, (None, ))
 
             ############################################################################################################
             # Other placeholders.
@@ -301,62 +310,63 @@ def train(configuration):
                     # valid_pred = valid_items.pred
                     # valid_true = valid_items.true
 
+                    print(valid_items.emotion.pred.shape)
+                    print(valid_items.emotion.true.shape)
+
                     # valid_accuracy = core.single_task_multi_class_accuracy_np(valid_items.emotion.pred, valid_items.emotion.true)
                     valid_all_measures = core.single_task_get_all_measures(valid_items.emotion.pred, valid_items.emotion.true)
                     valid_current_performance = valid_all_measures["au-prc-macro"]
 
+                    print(epoch, valid_current_performance)
+
                     if valid_current_performance > best_performance:
                         best_performance = valid_current_performance
 
-                        print("Test Base model.")
-                        config_epoch_pass = dict()
-                        config_epoch_pass["sess"] = sess
-                        config_epoch_pass["init_op"] = init_op_test
-                        config_epoch_pass["steps_per_epoch"] = test_steps_per_epoch
-                        config_epoch_pass["next_element"] = next_element_test
-                        config_epoch_pass["batch_size"] = configuration.test_batch_size
-                        config_epoch_pass["seq_length"] = configuration.seq_length
-                        config_epoch_pass["input_gaussian_noise"] = configuration.input_gaussian_noise
-                        config_epoch_pass["targets"] = targets
-                        config_epoch_pass["get_vars"] = [(pred_mean_test, "yes_mc", "pred")]
-                        config_epoch_pass["feed_dict"] = {batch_size_tensor: "batch_size",
-                                                          audio_test: "audio",
-                                                          emotion_test: "emotion",
-                                                          arousal_test: "arousal",
-                                                          valence_test: "valence",
-                                                          dominance_test: "dominance",}
-
-                        config_epoch_pass["saver"] = None
-
-                        config_epoch_pass = dict_to_struct(config_epoch_pass)
-
-                        test_items = core.run_epoch(config_epoch_pass)
-
-                        # test_accuracy = core.single_task_multi_class_accuracy_np(test_items.emotion.pred, test_items.emotion.true)
-                        test_all_measures = core.single_task_get_all_measures(test_items.emotion.pred, test_items.emotion.true)
-                        test_current_performance = test_all_measures["au-prc-macro"]
-
-                        print(epoch, valid_current_performance, test_current_performance)
-
-                        append_to_results_file(results_log_file,
-                                               epoch,
-                                               valid_all_measures,
-                                               test_all_measures)
-                        np.save(model_trained + "valid_true", valid_items.emotion.true)
-                        np.save(model_trained + "valid_pred", valid_items.emotion.pred)
-                        np.save(model_trained + "test_true", test_items.emotion.true)
-                        np.save(model_trained + "test_pred", test_items.emotion.pred)
-
-                    else:
-                        append_to_results_file(results_log_file,
-                                               epoch,
-                                               valid_all_measures,
-                                               test_all_measures)
-
+                        saver.save(sess, model_path_best)
                 else:
                     print(epoch)
 
+            saver.restore(sess, model_path_best)
+
             losses_fp.close()
+            print("Test Base model.")
+            config_epoch_pass = dict()
+            config_epoch_pass["sess"] = sess
+            config_epoch_pass["init_op"] = init_op_test
+            config_epoch_pass["steps_per_epoch"] = test_steps_per_epoch
+            config_epoch_pass["next_element"] = next_element_test
+            config_epoch_pass["batch_size"] = configuration.test_batch_size
+            config_epoch_pass["seq_length"] = configuration.seq_length
+            config_epoch_pass["input_gaussian_noise"] = configuration.input_gaussian_noise
+            config_epoch_pass["targets"] = targets
+            config_epoch_pass["get_vars"] = [(pred_mean_test, "yes_mc", "pred")]
+            config_epoch_pass["feed_dict"] = {batch_size_tensor: "batch_size",
+                                              audio_test: "audio",
+                                              emotion_test: "emotion",
+                                              arousal_test: "arousal",
+                                              valence_test: "valence",
+                                              dominance_test: "dominance", }
+
+            config_epoch_pass["saver"] = None
+
+            config_epoch_pass = dict_to_struct(config_epoch_pass)
+
+            test_items = core.run_epoch(config_epoch_pass)
+
+            # test_accuracy = core.single_task_multi_class_accuracy_np(test_items.emotion.pred, test_items.emotion.true)
+            test_all_measures = core.single_task_get_all_measures(test_items.emotion.pred, test_items.emotion.true)
+            test_current_performance = test_all_measures["au-prc-macro"]
+
+            print(test_current_performance)
+
+            append_to_results_file(results_log_file,
+                                   epoch,
+                                   valid_all_measures,
+                                   test_all_measures)
+            np.save(model_trained + "valid_true", valid_items.emotion.true)
+            np.save(model_trained + "valid_pred", valid_items.emotion.pred)
+            np.save(model_trained + "test_true", test_items.emotion.true)
+            np.save(model_trained + "test_pred", test_items.emotion.pred)
 
 
 def append_to_results_file(results_log_file, epoch, valid_current_performance, test_current_performance):

@@ -39,7 +39,7 @@ def get_split(dataset_dir,
                                                             ))
 
     dataset = dataset.map(lambda x: {
-                                     'subject_id': tf.reshape(x['subject_id'], (1, )),
+                                     'subject_id': tf.cast(tf.reshape(x['subject_id'], (1, )), tf.int32),
                                      'emotion': tf.reshape(tf.decode_raw(x['emotion'], tf.float32), (3, )),
                                      # 'emotion_shape': tf.reshape(tf.decode_raw(x['emotion_shape'], tf.float32), (1, )),
                                      'arousal': tf.reshape(tf.decode_raw(x['arousal'], tf.float32), (3, )),
@@ -50,7 +50,7 @@ def get_split(dataset_dir,
                                      # 'dominance_shape': tf.reshape(tf.decode_raw(x['dominance_shape'], tf.float32), (None, 2)),
                                      'raw_audio': tf.reshape(tf.decode_raw(x['raw_audio'], tf.float32), (510720, )),
                                      # 'raw_audio_shape': tf.reshape(tf.decode_raw(x['raw_audio_shape'], tf.float32), (None, 2))
-                                     'pre_pad_length': tf.reshape(x['subject_id'], (1, )),
+                                     'pre_pad_length': tf.cast(tf.reshape(x['subject_id'], (1, )), tf.int32),
                                                                     })
 
     # dataset = dataset.repeat()

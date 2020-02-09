@@ -1,4 +1,4 @@
-from emotion_recognition.experiments import train
+from emotion_recognition.experiments.experiment_setup import train
 from emotion_recognition.common import dict_to_struct
 
 for t in range(0, 1):
@@ -29,10 +29,10 @@ for t in range(0, 1):
     # configuration["train_size"] = 137
     # configuration["valid_size"] = 60
     # configuration["test_size"] = 73
-    configuration["num_epochs"] = 37
+    configuration["num_epochs"] = 40
     configuration["val_every_n_epoch"] = 1
 
-    configuration["GPU"] = 0
+    configuration["GPU"] = 1
 
     configuration = dict_to_struct(configuration)
 

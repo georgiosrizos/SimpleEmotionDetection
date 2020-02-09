@@ -6,7 +6,7 @@ except ImportError:
     import pickle
 from collections import namedtuple
 
-import self_support
+import emotion_recognition
 
 
 def get_package_path():
@@ -14,7 +14,7 @@ def get_package_path():
     Returns the folder path that the package lies in.
     :return: folder_path: The package folder path.
     """
-    return os.path.dirname(inspect.getfile(self_support))
+    return os.path.dirname(inspect.getfile(emotion_recognition))
 
 
 def dict_to_struct(obj):
