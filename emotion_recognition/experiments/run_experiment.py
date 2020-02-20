@@ -6,8 +6,8 @@ for t in range(0, 1):
 
     # Make the arguments' dictionary.
     configuration = dict()
-    configuration["data_folder"] = "/data/Data/data_folder/preprocessed_data/IEMOCAP/self_support"
-    configuration["target_folder"] = "/data/Data/Experiments/quality/self_support"
+    configuration["data_folder"] = "/data/Data/data_folder/preprocessed_data/IEMOCAP/self_attachment"
+    configuration["target_folder"] = "/data/Data/Experiments/quality/self_attachment"
     configuration["trial"] = t
 
     configuration["framework"] = "end2end"  # ["deepspectrum", "end2end", "zixing"]
@@ -29,7 +29,7 @@ for t in range(0, 1):
     # configuration["train_size"] = 137
     # configuration["valid_size"] = 60
     # configuration["test_size"] = 73
-    configuration["num_epochs"] = 40
+    configuration["num_epochs"] = 0
     configuration["val_every_n_epoch"] = 1
 
     configuration["GPU"] = 1

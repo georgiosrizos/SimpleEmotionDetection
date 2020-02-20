@@ -1,0 +1,3 @@
+model_checkpoint_path: "/data/Data/Experiments/quality/self_support/ckpt/log/end2end_single_global_max_pooling_0/best"
+all_model_checkpoint_paths: "/data/Data/Experiments/quality/self_support/ckpt/log/end2end_single_global_max_pooling_0/last"
+all_model_checkpoint_paths: "/data/Data/Experiments/quality/self_support/ckpt/log/end2end_single_global_max_pooling_0/best"

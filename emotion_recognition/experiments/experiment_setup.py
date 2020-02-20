@@ -249,6 +249,7 @@ def train(configuration):
                              "valid-au-prc-macro","test-au-prc-macro"]
             losses_fp.write("\t".join(measure_names) + "\n")
             losses_fp.close()
+            epoch = 0
             for ee, epoch in enumerate(range(starting_epoch, configuration.num_epochs + starting_epoch)):
                 print("Train Base model.")
 

@@ -1,0 +1,1 @@
+epoch	valid-accuracy	test-accuracy	valid-macro-f1	test-macro-f1	valid-au-roc-micro	test-au-roc-micro	valid-au-roc-macro	test-au-roc-macro	valid-au-prc-micro	test-au-prc-micro	valid-au-prc-macro	test-au-prc-macro
